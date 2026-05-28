@@ -1,0 +1,114 @@
+<div class="w-full mw-1024 mx-auto">
+  <div class="content mx-auto flex justify-between">
+    <div class="product-search">
+      <input class="w-full p-2 rounded-xl border border-gray-200 placeholder-gray-400 text-sm bg-white my-auto" placeholder="Search" type="text">
+    </div>
+     <button class="bg-brand-primary hover:bg-brand-primaryHover py-1 px-3 rounded-xl text-sm font-semibold" (click)="goCreate()">Agregar</button>
+  </div>
+  <!--PRODUCT LIST-->
+  <div class="w-full overflow-hidden rounded-xl border border-gray-100 bg-white mt-8">
+    <!-- TABLE -->
+    <div class="overflow-x-auto ">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="px-4 py-3 text-left font-medium text-gray-400 w-20">Logo</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-400">Nombre del producto</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-400">
+              <span class="inline-flex items-center gap-1">
+                Descripción
+                <i class="ti ti-info-circle text-gray-300 text-xs"></i>
+              </span>
+            </th>
+            <th class="px-4 py-3 text-left font-medium text-gray-400">
+              <span class="inline-flex items-center gap-1">
+                Fecha de liberación
+                <i class="ti ti-info-circle text-gray-300 text-xs"></i>
+              </span>
+            </th>
+            <th class="px-4 py-3 text-left font-medium text-gray-400">
+              <span class="inline-flex items-center gap-1">
+                Fecha de reestructuración
+                <i class="ti ti-info-circle text-gray-300 text-xs"></i>
+              </span>
+            </th>
+            <th class="px-4 py-3 text-left font-medium text-gray-400">
+              <span class="inline-flex items-center gap-1">
+                Accion
+                <i class="ti ti-info-circle text-gray-300 text-xs"></i>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of paginatedProducts; track product.id) {
+            <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3">
+                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-medium text-gray-400">
+                  {{ product.name.slice(0, 2).toUpperCase() }}
+                </div>
+              </td>
+              <td class="px-4 py-3 text-gray-800">{{ product.name }}</td>
+              <td class="px-4 py-3 text-gray-800">{{ product.description }}</td>
+              <td class="px-4 py-3 text-gray-400">{{ product.date_release }}</td>
+              <td class="px-4 py-3 text-gray-400">{{ product.date_revision }}</td>
+              <td class="actions cursor-pointer">
+                <svg lucideEllipsisVertical></svg>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex items-center justify-between px-4 py-3">
+      <span class="text-sm text-gray-400">{{ products.length }} Resultados</span>
+
+      <div class="flex items-center gap-3">
+
+        <!-- Pagination -->
+        <div class="flex items-center gap-1">
+          <button
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="currentPage === 1"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-colors">
+            <i class="ti ti-chevron-left text-sm"></i>
+          </button>
+
+          @for (page of pageRange; track $index) {
+            @if (page === '...') {
+              <span class="w-8 h-8 flex items-center justify-center text-gray-300 text-sm">…</span>
+            } @else {
+              <button
+                (click)="goToPage(page)"
+                [class]="page === currentPage
+                  ? 'w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm font-medium'
+                  : 'w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 text-sm hover:bg-gray-50 transition-colors'">
+                {{ page }}
+              </button>
+            }
+          }
+
+          <button
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="currentPage === totalPages"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-colors">
+            <i class="ti ti-chevron-right text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Page size -->
+        <select
+          [(ngModel)]="pageSize"
+          (ngModelChange)="onPageSizeChange()"
+          class="h-8 rounded-lg border border-gray-200 text-sm text-gray-600 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300">
+          @for (size of pageSizeOptions; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+
+      </div>
+    </div>
+  </div>
+</div>
