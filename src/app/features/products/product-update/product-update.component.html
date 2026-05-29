@@ -1,1 +1,108 @@
-<p>product-update works!</p>
+<div class="mw-1024 mx-auto">
+  <!-- Page -->
+  <div class="flex justify-center pt-5">
+    <section class="w-[720px] bg-white shadow-sm rounded-xl">
+      <div class="border-b border-gray-400 py-3 text-center">
+        <h2 class="text-md font-bold text-gray-900">
+          Formulario de Registro
+        </h2>
+      </div>
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="px-10 py-8">
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+          <div>
+            <label class="block mb-2 text-gray-800 text-sm">ID</label>
+            <input formControlName="id" type="text" class="w-full h-8 rounded border px-4 outline-none"/>
+            <p class="mt-2 text-sm text-red-600"
+            *ngIf="productForm.get('id')?.hasError('required') && productForm.get('id')?.touched"
+              >
+              Campo requerido
+            </p>
+            <span class="mt-2 text-sm text-red-600"
+            *ngIf="productForm.get('id')?.hasError('idValidationFailed')">
+              ID no valido
+            </span>
+            <!--Validate ID with verification service-->
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-800 text-sm">Nombre</label>
+            <input formControlName="name" type="text" value="" class="w-full h-8 rounded border px-4 outline-none" />
+              <span *ngIf="productForm.get('name')?.hasError('required') && productForm.get('name')?.touched"
+                class="mt-2 text-sm text-red-600">
+                Campo requerido
+          </span>
+            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('name')?.hasError('minlength')">
+              Minimo 5 caracteres.
+            </span>
+
+            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('name')?.hasError('maxlength')">
+              Maximo 100 caracteres.
+            </span>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-800 text-sm">Descripción</label>
+            <input formControlName="description" type="text" class="w-full h-8 rounded border px-4 outline-none" />
+             <p *ngIf="productForm.get('description')?.hasError('required') && productForm.get('description')?.touched"
+              class="mt-2 text-sm text-red-600">
+              Campo requerido
+            </p>
+            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('description')?.hasError('minlength')">
+              Minimo 10 caracteres.
+            </span>
+
+            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('description')?.hasError('maxlength')">
+              Maximo 200 caracteres.
+            </span>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-800 text-sm">Logo</label>
+            <input formControlName="logo" type="text" class="w-full h-8 rounded border px-4 outline-none" />
+            <p *ngIf="productForm.get('logo')?.hasError('required') && productForm.get('logo')?.touched"
+              class="mt-2 text-sm text-red-600">
+              Campo requerido
+            </p>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-800 text-sm">
+              Fecha Liberación
+            </label>
+            <input
+            formControlName="date_release"
+            type="date"
+            [min]="today.toISOString().split('T')[0]"
+            class="w-full h-8 rounded border  px-4 outline-none" />
+            <p *ngIf="productForm.get('date_release')?.hasError('required') && productForm.get('date_release')?.touched"
+              class="mt-2 text-sm text-red-600">
+              Campo requerido
+            </p>
+          <p *ngIf="productForm.get('date_release')?.hasError('minToday')"
+              class="mt-2 text-sm text-red-600">
+              Fecha no puede ser menor a hoy.
+            </p>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-400 text-sm">
+              Fecha Revisión
+            </label>
+            <input formControlName="date_revision" type="date" [disabled]="true" [min]="nextYear.toISOString().split('T')[0]"
+            class="w-full h-8 rounded border  px-4 outline-none"
+            />
+            <p *ngIf="productForm.get('date_revision')?.hasError('required') && productForm.get('date_revision')?.touched"
+              class="mt-2 text-sm text-red-600">
+              Campo requerido
+            </p>
+          </div>
+        </div>
+        <div class="mt-8 flex justify-end gap-8">
+          <!-- <button (click)="resetForm()"
+            class="py-4 font-semibold px-3 w-28 text-sm rounded-xl bg-slate-100 text-blue-950 hover:bg-slate-200">
+            Reiniciar
+          </button> -->
+          <button type="submit"
+            class="py-4 font-semibold px-3 w-28 text-sm rounded-xl bg-brand-primary text-blue-950 hover:bg-brand-primaryHover">
+            Enviar
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

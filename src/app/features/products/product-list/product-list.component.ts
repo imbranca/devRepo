@@ -2,14 +2,14 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Product } from '../../../interfaces/Product';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {LucideEllipsisVertical} from '@lucide/angular'
+import {LucideChevronLeft, LucideChevronRight, LucideEllipsisVertical} from '@lucide/angular'
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, LucideEllipsisVertical],
+  imports: [FormsModule, CommonModule, LucideEllipsisVertical, LucideChevronLeft, LucideChevronRight],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
@@ -18,6 +18,11 @@ export class ProductListComponent implements OnInit{
   currentPage = 1;
   pageSize = 5;
   pageSizeOptions = [5, 10, 20];
+
+  openedProduct:Product|null = null;
+
+  showDeleteModal: boolean = false;
+
   private productService = inject(ProductService);
   private router = inject(Router);
 
@@ -33,6 +38,10 @@ export class ProductListComponent implements OnInit{
     })
   }
 
+
+  toggleMenu(product: Product):void{
+    this.openedProduct = this.openedProduct?.id === product.id ? null: product;
+  }
   goCreate(): void {
     this.router.navigate(['/products/create']);
   }
@@ -50,6 +59,22 @@ export class ProductListComponent implements OnInit{
 
   onPageSizeChange(): void {
     this.currentPage = 1;
+  }
+
+  editProduct(product: Product){
+    localStorage.setItem('updateProduct',JSON.stringify(product));
+    this.productService.updateProduct.next(product);
+    this.router.navigate([`/products/update/${product.id}`]);
+  }
+
+  deleteProduct(product: Product){
+    this.openedProduct = product;
+    this.showDeleteModal = true;
+    // this.openedMenuId = null;
+  }
+
+  confirmDelete(){
+    //confirm
   }
 
   get totalPages(): number {

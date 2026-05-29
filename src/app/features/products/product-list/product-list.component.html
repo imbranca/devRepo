@@ -41,7 +41,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (product of paginatedProducts; track product.id) {
+          @for (product of paginatedProducts; track product.id; let last = $last) {
             <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
               <td class="px-4 py-3">
                 <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-medium text-gray-400">
@@ -50,10 +50,26 @@
               </td>
               <td class="px-4 py-3 text-gray-800">{{ product.name }}</td>
               <td class="px-4 py-3 text-gray-800">{{ product.description }}</td>
-              <td class="px-4 py-3 text-gray-400">{{ product.date_release }}</td>
-              <td class="px-4 py-3 text-gray-400">{{ product.date_revision }}</td>
-              <td class="actions cursor-pointer">
-                <svg lucideEllipsisVertical></svg>
+              <td class="px-4 py-3 text-gray-800">{{ product.date_release }}</td>
+              <td class="px-4 py-3 text-gray-800">{{ product.date_revision }}</td>
+              <td class="actions cursor-pointer relative">
+                <div class="iconEllipsis" (click)="toggleMenu(product)">
+                  <svg lucideEllipsisVertical ></svg>
+                </div>
+                 <div
+                    *ngIf="openedProduct?.id === product?.id"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10"
+                    [class.lastProduct]="last"
+                  >
+                    <button type="button" (click)="editProduct(product)" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
+                      Editar
+                    </button>
+
+                    <button type="button" (click)="deleteProduct(product)"
+                      class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                      Eliminar
+                    </button>
+                  </div>
               </td>
             </tr>
           }
@@ -73,7 +89,7 @@
             (click)="goToPage(currentPage - 1)"
             [disabled]="currentPage === 1"
             class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-colors">
-            <i class="ti ti-chevron-left text-sm"></i>
+           <svg lucideChevronLeft></svg>
           </button>
 
           @for (page of pageRange; track $index) {
@@ -94,7 +110,7 @@
             (click)="goToPage(currentPage + 1)"
             [disabled]="currentPage === totalPages"
             class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-colors">
-            <i class="ti ti-chevron-right text-sm"></i>
+            <svg lucideChevronRight></svg>
           </button>
         </div>
 
@@ -107,8 +123,37 @@
             <option [value]="size">{{ size }}</option>
           }
         </select>
-
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Backdrop -->
+<div
+  *ngIf="showDeleteModal"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+>
+  <!-- Modal -->
+  <div class="w-[500px] rounded-2xl bg-white shadow-xl overflow-hidden">
+    <!-- Content -->
+    <div class="px-4 py-4">
+      <h2 class="text-base text-black">
+        ¿Estas seguro de eliminar el producto
+        <span class="font-semibold">{{openedProduct?.name}}</span>?
+      </h2>
+    </div>
+    <div class="border-t border-gray-200"></div>
+    <div class="flex justify-center gap-4 px-4 py-4">
+      <button type="button" (click)="showDeleteModal = false"
+        class="h-10 px-5 rounded-xl bg-slate-100 text-sm font-semibold hover:bg-slate-200 transition">
+        Cancelar
+      </button>
+
+      <button type="button" (click)="confirmDelete()"
+        class="h-10 px-5 rounded-xl text-sm font-semibold bg-brand-primary hover:bg-brand-primaryHover transition">
+        Confirmar
+      </button>
+    </div>
+
   </div>
 </div>

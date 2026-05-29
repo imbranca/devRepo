@@ -14,7 +14,7 @@ export const PRODUCTS_ROUTE:Routes = [
         .then(m => m.ProductCreateComponent),
   },
   {
-    path: 'update',
+    path: 'update/:id',
         loadComponent: () =>
       import('./product-update/product-update.component')
         .then(m => m.ProductUpdateComponent),
