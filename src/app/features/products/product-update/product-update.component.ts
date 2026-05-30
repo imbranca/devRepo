@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { minTodayValidator, validateId } from '../validators/product.validators';
 import { CommonModule } from '@angular/common';
-import { ProductResponse } from '../../../interfaces/Product';
+import { Product, ProductResponse } from '../../../interfaces/Product';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -15,36 +15,39 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './product-update.component.html',
   styleUrl: './product-update.component.scss'
 })
+
 export class ProductUpdateComponent {
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private productService = inject(ProductService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
 
   id!: string|null;
 
   today = new Date();
   nextYear = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-  fb = inject(FormBuilder);
   productForm!: ReturnType<typeof this.createForm>;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.id = id;
 
-    const storedProduct = localStorage.getItem('updateProduct');
-    const product = this.productService.updateProduct.value ??
+    const storedProduct = localStorage.getItem('productToUpdate');
+    const product = this.productService.productToUpdate.value ??
     (storedProduct ? JSON.parse(storedProduct) : null);
     if (!product || product?.id !== id) {
       this.router.navigate(['/products']);
+      return;
     }
 
     this.productForm = this.createForm(product);
-    this.productForm.get('date_release')?.valueChanges.pipe(
+    this.productForm.get('date_release')?.valueChanges?.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((date) => {
+    )?.subscribe((date) => {
       let current = new Date(date as string);
-      let nextYear = new Date(current.setFullYear(current.getFullYear() + 1));
+      const nextYear = new Date(current);
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
 
       this.productForm.get('date_revision')?.setValue((
         nextYear.toISOString().split('T')[0]
@@ -57,10 +60,10 @@ export class ProductUpdateComponent {
     this.productForm.markAllAsTouched();
 
     if(this.productForm.valid){
-      this.productService.update(this.productForm.getRawValue()).subscribe({
+      this.productService.update(this.productForm?.getRawValue() as Product).subscribe({
         next:(data: ProductResponse)=>{
-          this.productService.updateProduct.next(data?.data);
-          localStorage.setItem('updateProduct', JSON.stringify(data?.data));
+          this.productService.productToUpdate.next(data?.data);
+          localStorage.setItem('productToUpdate', JSON.stringify(data?.data));
 
           alert(data.message);
         },
@@ -73,15 +76,15 @@ export class ProductUpdateComponent {
 
 
   createForm(product: any) {
-    return this.fb.group({
+    const form = this.fb.group({
       id: [
-        product.id,
+        product?.id,
         {
           validators: [Validators.required],
         }
       ],
       name: [
-        product.name,
+        product?.name,
         [
           Validators.required,
           Validators.minLength(6),
@@ -89,26 +92,27 @@ export class ProductUpdateComponent {
         ]
       ],
       description: [
-        product.description,
+        product?.description,
         [
           Validators.required,
           Validators.minLength(10),
           Validators.maxLength(200)
         ]
       ],
-      logo: [product.logo, Validators.required],
+      logo: [product?.logo, Validators.required],
       date_release: [
-        product.date_release,
+        product?.date_release,
         [Validators.required]
       ],
       date_revision: [
         {
-          value: product.date_revision,
+          value: product?.date_revision,
           disabled: true
         },
         Validators.required
       ]
     });
+    return form;
   }
 
 

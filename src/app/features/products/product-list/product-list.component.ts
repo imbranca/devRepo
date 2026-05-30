@@ -31,8 +31,8 @@ export class ProductListComponent implements OnInit{
   private router = inject(Router);
 
   ngOnInit(): void {
-    localStorage.removeItem('updateProduct');
-    this.productService.updateProduct.next(null);
+    localStorage.removeItem('productToUpdate');
+    this.productService.productToUpdate.next(null);
 
      this.searchControl.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
@@ -71,8 +71,8 @@ export class ProductListComponent implements OnInit{
   }
 
   editProduct(product: Product){
-    localStorage.setItem('updateProduct',JSON.stringify(product));
-    this.productService.updateProduct.next(product);
+    localStorage.setItem('productToUpdate',JSON.stringify(product));
+    this.productService.productToUpdate.next(product);
     this.router.navigate([`/products/update/${product.id}`]);
   }
 

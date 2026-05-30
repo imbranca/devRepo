@@ -90,8 +90,8 @@ export class ProductCreateComponent implements OnInit{
   ngOnInit(): void {
     this.productForm.get('date_release')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((date)=>{
       let current = new Date(date as string);
-      let nextYear =  new Date(current.setFullYear(current.getFullYear() + 1));
-
+      const nextYear = new Date(current);
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
       this.productForm.get('date_revision')?.setValue((
         nextYear.toISOString().split('T')[0]
       ), { emitEvent: false });

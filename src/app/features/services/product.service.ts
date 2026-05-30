@@ -7,7 +7,7 @@ import { GetProductsResponse, Product, ProductResponse } from '../../interfaces/
   providedIn: 'root'
 })
 export class ProductService {
-  public updateProduct:BehaviorSubject<Product|null> = new  BehaviorSubject<Product|null>(null);
+  public productToUpdate:BehaviorSubject<Product|null> = new  BehaviorSubject<Product|null>(null);
 
   constructor(private http: HttpClient) { }
 
