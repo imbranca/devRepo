@@ -1,25 +1,29 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Product } from '../../../interfaces/Product';
-import { FormsModule } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Product, ProductResponse } from '../../../interfaces/Product';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {LucideChevronLeft, LucideChevronRight, LucideEllipsisVertical} from '@lucide/angular'
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
+import { switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, LucideEllipsisVertical, LucideChevronLeft, LucideChevronRight],
+  imports: [FormsModule, CommonModule,ReactiveFormsModule, LucideEllipsisVertical, LucideChevronLeft, LucideChevronRight],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
 export class ProductListComponent implements OnInit{
+  private destroyRef = inject(DestroyRef);
   products: Product[] = [];
   currentPage = 1;
   pageSize = 5;
   pageSizeOptions = [5, 10, 20];
 
   openedProduct:Product|null = null;
+  searchControl = new FormControl('', { nonNullable: true });
 
   showDeleteModal: boolean = false;
 
@@ -27,6 +31,15 @@ export class ProductListComponent implements OnInit{
   private router = inject(Router);
 
   ngOnInit(): void {
+    localStorage.removeItem('updateProduct');
+    this.productService.updateProduct.next(null);
+
+     this.searchControl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef)
+     ).subscribe(() => {
+      this.currentPage = 1;
+    });
+
     this.productService.getAll().subscribe({
       next:(response)=>{
         console.log("response ",response);
@@ -35,7 +48,7 @@ export class ProductListComponent implements OnInit{
       error:()=>{
 
       }
-    })
+    });
   }
 
 
@@ -46,10 +59,6 @@ export class ProductListComponent implements OnInit{
     this.router.navigate(['/products/create']);
   }
 
-  get paginatedProducts(): Product[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.products.slice(start, start + this.pageSize);
-  }
 
   goToPage(page: number | string): void {
     if (typeof page !== 'number') return;
@@ -70,15 +79,48 @@ export class ProductListComponent implements OnInit{
   deleteProduct(product: Product){
     this.openedProduct = product;
     this.showDeleteModal = true;
-    // this.openedMenuId = null;
   }
 
   confirmDelete(){
-    //confirm
+    if (this.openedProduct?.id) {
+      this.productService.delete(this.openedProduct.id).pipe(
+        tap((data: Partial<ProductResponse>) => {
+          alert(data.message);
+        }),
+        switchMap(() => this.productService.getAll())
+      ).subscribe({
+        next: (response) => {
+          this.products = response.data;
+          this.showDeleteModal = false;
+          this.openedProduct = null;
+        },
+        error: (error) => {
+          alert(error?.error?.message ?? 'Error deleting product');
+        }
+      });
+    }
+  }
+  get filteredProducts(): Product[] {
+    const search = this.searchControl.value.trim().toLowerCase();
+
+    if (!search) {
+      return this.products;
+    }
+
+    return this.products.filter(product =>
+      product.name.toLowerCase().includes(search) ||
+      product.description.toLowerCase().includes(search)
+    );
   }
 
+    get paginatedProducts(): Product[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredProducts.slice(start, start + this.pageSize);
+  }
+
+
   get totalPages(): number {
-    return Math.ceil(this.products.length / this.pageSize);
+    return Math.ceil(this.filteredProducts.length / this.pageSize);
   }
 
   get pageRange(): (number | string)[] {

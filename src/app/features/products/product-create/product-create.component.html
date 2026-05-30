@@ -1,4 +1,6 @@
+
 <div class="mw-1024 mx-auto">
+  <a class="mx-auto cursor-pointer" [routerLink]="['/products']">Home</a>
   <!-- Page -->
   <div class="flex justify-center pt-5">
     <section class="w-[720px] bg-white shadow-sm rounded-xl">
@@ -11,54 +13,66 @@
         <div class="grid grid-cols-2 gap-x-6 gap-y-3">
           <div>
             <label class="block mb-2 text-gray-800 text-sm">ID</label>
-            <input formControlName="id" type="text" class="w-full h-8 rounded border px-4 outline-none"/>
-            <p class="mt-2 text-sm text-red-600"
-            *ngIf="productForm.get('id')?.hasError('required') && productForm.get('id')?.touched"
-              >
+            <input formControlName="id" type="text" class="w-full h-8 rounded border px-4 outline-none text-sm"/>
+            @if(productForm.get('id')?.touched){
+            <span class="mt-2 text-sm text-red-600"
+              *ngIf="productForm.get('id')?.hasError('required')">
               Campo requerido
-            </p>
+            </span>
+                  <span class="mt-2 text-sm text-red-600"
+              *ngIf="productForm.get('id')?.hasError('minlength')">
+              Minimo 3 caracteres
+            </span>
+            <span class="mt-2 text-sm text-red-600"
+              *ngIf="productForm.get('id')?.hasError('maxlength')">
+              Maximo 10 caracteres
+            </span>
             <span class="mt-2 text-sm text-red-600"
             *ngIf="productForm.get('id')?.hasError('idValidationFailed')">
               ID no valido
             </span>
+            }
           </div>
           <div>
             <label class="block mb-2 text-gray-800 text-sm">Nombre</label>
-            <input formControlName="name" type="text" value="" class="w-full h-8 rounded border px-4 outline-none" />
-              <span *ngIf="productForm.get('name')?.hasError('required') && productForm.get('name')?.touched"
+            <input formControlName="name" type="text" value="" class="w-full h-8 rounded border px-4 outline-none text-sm"/>
+            @if (productForm.get('name')?.touched) {
+              <span *ngIf="productForm.get('name')?.hasError('required')"
                 class="mt-2 text-sm text-red-600">
                 Campo requerido
-          </span>
-            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('name')?.hasError('minlength')">
-              Minimo 5 caracteres.
-            </span>
-
-            <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('name')?.hasError('maxlength')">
-              Maximo 100 caracteres.
-            </span>
+              </span>
+              <span class="mt-2 text-sm text-red-600"
+                *ngIf="productForm.get('name')?.hasError('minlength')">
+                Minimo 6 caracteres.
+              </span>
+              <span class="mt-2 text-sm text-red-600"
+                *ngIf="productForm.get('name')?.hasError('maxlength')">
+                Maximo 100 caracteres.
+              </span>
+            }
           </div>
           <div>
             <label class="block mb-2 text-gray-800 text-sm">Descripción</label>
-            <input formControlName="description" type="text" class="w-full h-8 rounded border px-4 outline-none" />
-             <p *ngIf="productForm.get('description')?.hasError('required') && productForm.get('description')?.touched"
-              class="mt-2 text-sm text-red-600">
+            <input formControlName="description" type="text" class="w-full h-8 rounded border px-4 text-sm outline-none" />
+            @if (productForm.get('description')?.touched) {
+            <span *ngIf="productForm.get('description')?.hasError('required')" class="mt-2 text-sm text-red-600">
               Campo requerido
-            </p>
+            </span>
             <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('description')?.hasError('minlength')">
               Minimo 10 caracteres.
             </span>
-
             <span class="mt-2 text-sm text-red-600" *ngIf="productForm.get('description')?.hasError('maxlength')">
               Maximo 200 caracteres.
             </span>
+            }
           </div>
           <div>
             <label class="block mb-2 text-gray-800 text-sm">Logo</label>
-            <input formControlName="logo" type="text" class="w-full h-8 rounded border px-4 outline-none" />
-            <p *ngIf="productForm.get('logo')?.hasError('required') && productForm.get('logo')?.touched"
+            <input formControlName="logo" type="text" class="w-full h-8 rounded border px-4 outline-none text-sm" />
+            <span *ngIf="productForm.get('logo')?.hasError('required') && productForm.get('logo')?.touched"
               class="mt-2 text-sm text-red-600">
               Campo requerido
-            </p>
+            </span>
           </div>
           <div>
             <label class="block mb-2 text-gray-800 text-sm">
@@ -67,23 +81,25 @@
             <input
             formControlName="date_release"
             type="date"
-            [min]="today.toISOString().split('T')[0]"
-            class="w-full h-8 rounded border  px-4 outline-none" />
-            <p *ngIf="productForm.get('date_release')?.hasError('required') && productForm.get('date_release')?.touched"
-              class="mt-2 text-sm text-red-600">
-              Campo requerido
-            </p>
-          <p *ngIf="productForm.get('date_release')?.hasError('minToday')"
-              class="mt-2 text-sm text-red-600">
-              Fecha no puede ser menor a hoy.
-            </p>
+            [min]="localDate"
+            class="w-full h-8 rounded border  px-4 outline-none text-sm" />
+              @if (productForm.get('date_release')?.touched) {
+              <span *ngIf="productForm.get('date_release')?.hasError('required')"
+                class="mt-2 text-sm text-red-600">
+                Campo requerido
+              </span>
+              <span *ngIf="productForm.get('date_release')?.hasError('minToday')" class="mt-2 text-sm text-red-600">
+                Fecha no puede ser menor a hoy.
+              </span>
+              }
           </div>
           <div>
             <label class="block mb-2 text-gray-400 text-sm">
               Fecha Revisión
             </label>
-            <input formControlName="date_revision" type="date" [disabled]="true" [min]="nextYear.toISOString().split('T')[0]"
-            class="w-full h-8 rounded border  px-4 outline-none"
+            <input formControlName="date_revision" type="date" [disabled]="true"
+            [min]="localNextYear"
+            class="w-full h-8 rounded border  px-4 outline-none text-sm"
             />
             <p *ngIf="productForm.get('date_revision')?.hasError('required') && productForm.get('date_revision')?.touched"
               class="mt-2 text-sm text-red-600">
@@ -92,7 +108,7 @@
           </div>
         </div>
         <div class="mt-8 flex justify-end gap-8">
-          <button (click)="resetForm()"
+          <button (click)="resetForm()" type="button"
             class="py-4 font-semibold px-3 w-28 text-sm rounded-xl bg-slate-100 text-blue-950 hover:bg-slate-200">
             Reiniciar
           </button>

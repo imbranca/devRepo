@@ -1,44 +1,74 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { minTodayValidator, validateId } from '../validators/product.validators';
 import { CommonModule } from '@angular/common';
+import { ProductResponse } from '../../../interfaces/Product';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-update',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './product-update.component.html',
   styleUrl: './product-update.component.scss'
 })
 export class ProductUpdateComponent {
-  id: any;
+  private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private productService = inject(ProductService);
+  private router = inject(Router);
+
+  id!: string|null;
+
   today = new Date();
   nextYear = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
   fb = inject(FormBuilder);
-
   productForm!: ReturnType<typeof this.createForm>;
-
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.id = id;
-    console.log('id:', id);
-    const storedProduct = localStorage.getItem('updateProduct');
 
+    const storedProduct = localStorage.getItem('updateProduct');
     const product = this.productService.updateProduct.value ??
     (storedProduct ? JSON.parse(storedProduct) : null);
-    if (!product) {
-      return;
+    if (!product || product?.id !== id) {
+      this.router.navigate(['/products']);
     }
+
     this.productForm = this.createForm(product);
+    this.productForm.get('date_release')?.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((date) => {
+      let current = new Date(date as string);
+      let nextYear = new Date(current.setFullYear(current.getFullYear() + 1));
+
+      this.productForm.get('date_revision')?.setValue((
+        nextYear.toISOString().split('T')[0]
+      ), { emitEvent: false });
+    });
+
   }
 
   onSubmit(){
+    this.productForm.markAllAsTouched();
 
+    if(this.productForm.valid){
+      this.productService.update(this.productForm.getRawValue()).subscribe({
+        next:(data: ProductResponse)=>{
+          this.productService.updateProduct.next(data?.data);
+          localStorage.setItem('updateProduct', JSON.stringify(data?.data));
+
+          alert(data.message);
+        },
+        error: (error: HttpErrorResponse) => {
+          alert(error?.error?.message);
+        }
+      });
+    }
   }
 
 
@@ -48,15 +78,13 @@ export class ProductUpdateComponent {
         product.id,
         {
           validators: [Validators.required],
-          asyncValidators: [validateId(this.productService)],
-          updateOn: 'change'
         }
       ],
       name: [
         product.name,
         [
           Validators.required,
-          Validators.minLength(5),
+          Validators.minLength(6),
           Validators.maxLength(100)
         ]
       ],
@@ -71,7 +99,7 @@ export class ProductUpdateComponent {
       logo: [product.logo, Validators.required],
       date_release: [
         product.date_release,
-        [Validators.required, minTodayValidator()]
+        [Validators.required]
       ],
       date_revision: [
         {

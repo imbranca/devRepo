@@ -1,38 +1,38 @@
 <div class="w-full mw-1024 mx-auto">
   <div class="content mx-auto flex justify-between">
     <div class="product-search">
-      <input class="w-full p-2 rounded-xl border border-gray-200 placeholder-gray-400 text-sm bg-white my-auto" placeholder="Search" type="text">
+      <input [formControl]="searchControl" class="w-full p-2 rounded-xl border border-gray-200 placeholder-gray-400 text-sm bg-white my-auto" placeholder="Search" type="text">
     </div>
      <button class="bg-brand-primary hover:bg-brand-primaryHover py-1 px-3 rounded-xl text-sm font-semibold" (click)="goCreate()">Agregar</button>
   </div>
   <!--PRODUCT LIST-->
-  <div class="w-full overflow-hidden rounded-xl border border-gray-100 bg-white mt-8">
+  <div class="w-full overflow-visible rounded-xl border border-gray-100 bg-white mt-8">
     <!-- TABLE -->
-    <div class="overflow-x-auto ">
-      <table class="w-full text-sm">
+    <div class="overflow-x-auto overflow-y-visible">
+      <table class="w-full text-sm pb-10">
         <thead>
           <tr class="border-b border-gray-100">
-            <th class="px-4 py-3 text-left font-medium text-gray-400 w-20">Logo</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-400">Nombre del producto</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-400">
+            <th class="px-4 py-8 text-left font-medium text-gray-400 w-20">Logo</th>
+            <th class="px-4 py-8 text-left font-medium text-gray-400">Nombre del producto</th>
+            <th class="px-4 py-8 text-left font-medium text-gray-400">
               <span class="inline-flex items-center gap-1">
                 Descripción
                 <i class="ti ti-info-circle text-gray-300 text-xs"></i>
               </span>
             </th>
-            <th class="px-4 py-3 text-left font-medium text-gray-400">
+            <th class="px-4 py-8 text-left font-medium text-gray-400">
               <span class="inline-flex items-center gap-1">
                 Fecha de liberación
                 <i class="ti ti-info-circle text-gray-300 text-xs"></i>
               </span>
             </th>
-            <th class="px-4 py-3 text-left font-medium text-gray-400">
+            <th class="px-4 py-8 text-left font-medium text-gray-400">
               <span class="inline-flex items-center gap-1">
                 Fecha de reestructuración
                 <i class="ti ti-info-circle text-gray-300 text-xs"></i>
               </span>
             </th>
-            <th class="px-4 py-3 text-left font-medium text-gray-400">
+            <th class="px-4 py-8 text-left font-medium text-gray-400">
               <span class="inline-flex items-center gap-1">
                 Accion
                 <i class="ti ti-info-circle text-gray-300 text-xs"></i>
@@ -41,12 +41,19 @@
           </tr>
         </thead>
         <tbody>
-          @for (product of paginatedProducts; track product.id; let last = $last) {
-            <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+          @if(!paginatedProducts || paginatedProducts.length === 0){
+            <tr>
+              <td colspan="6" class="w-full text-center pt-4">
+                  <p class="text-md ">No se encontraron productos</p>
+              </td>
+            </tr>
+          }
+
+          @for (product of paginatedProducts; track product.id; let index = $index;let last = $last) {
+            <tr class="border-b h-[75px] border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
               <td class="px-4 py-3">
-                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-medium text-gray-400">
-                  {{ product.name.slice(0, 2).toUpperCase() }}
-                </div>
+                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 bg-cover bg-center bg-no-repeat"
+                  [ngStyle]="{ 'background-image': 'url(' + product.logo + ')' }"></div>
               </td>
               <td class="px-4 py-3 text-gray-800">{{ product.name }}</td>
               <td class="px-4 py-3 text-gray-800">{{ product.description }}</td>
@@ -64,8 +71,7 @@
                     <button type="button" (click)="editProduct(product)" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
                       Editar
                     </button>
-
-                    <button type="button" (click)="deleteProduct(product)"
+ <button type="button" (click)="deleteProduct(product)"
                       class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
                       Eliminar
                     </button>
@@ -79,7 +85,7 @@
 
     <!-- PAGINATION -->
     <div class="flex items-center justify-between px-4 py-3">
-      <span class="text-sm text-gray-400">{{ products.length }} Resultados</span>
+      <span class="text-sm text-gray-400">{{ filteredProducts.length }} Resultados</span>
 
       <div class="flex items-center gap-3">
 
@@ -129,10 +135,7 @@
 </div>
 
 <!-- Backdrop -->
-<div
-  *ngIf="showDeleteModal"
-  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
   <!-- Modal -->
   <div class="w-[500px] rounded-2xl bg-white shadow-xl overflow-hidden">
     <!-- Content -->

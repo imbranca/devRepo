@@ -1,4 +1,5 @@
 import {Routes} from '@angular/router';
+import { updateProductGuard } from '../../guards/update-product.guard';
 
 export const PRODUCTS_ROUTE:Routes = [
   {
@@ -15,7 +16,8 @@ export const PRODUCTS_ROUTE:Routes = [
   },
   {
     path: 'update/:id',
-        loadComponent: () =>
+      canActivate: [updateProductGuard],
+      loadComponent: () =>
       import('./product-update/product-update.component')
         .then(m => m.ProductUpdateComponent),
   }

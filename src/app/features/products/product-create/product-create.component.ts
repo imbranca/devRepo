@@ -1,24 +1,32 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { Product, ProductResponse } from '../../../interfaces/Product';
 import { AbstractControl, AsyncValidatorFn, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
-import { catchError, debounce, debounceTime, distinctUntilChanged, map, Observable, of, Subject, switchMap, timer } from 'rxjs';
+import { catchError, debounce, debounceTime, distinctUntilChanged, map, Observable, of, Subject, switchMap, takeUntil, timer } from 'rxjs';
 import { minTodayValidator, validateId } from '../validators/product.validators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule, RouterLink],
   templateUrl: './product-create.component.html',
   styleUrl: './product-create.component.scss'
 })
 export class ProductCreateComponent implements OnInit{
 
   private productService = inject(ProductService);
+  private destroyRef = inject(DestroyRef);
+
   today = new Date();
   nextYear = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+  localDate =
+  `${this.today.getFullYear()}-${String(this.today.getMonth() + 1).padStart(2, '0')}-${String(this.today.getDate()).padStart(2, '0')}`;
+  localNextYear =
+  `${this.nextYear.getFullYear()}-${String(this.nextYear.getMonth() + 1).padStart(2, '0')}-${String(this.nextYear.getDate()).padStart(2, '0')}`;
 
   fb = inject(FormBuilder);
   initialFormValue = {
@@ -26,15 +34,19 @@ export class ProductCreateComponent implements OnInit{
     name: '',
     description: '',
     logo: '',
-    date_release: this.today.toISOString().split('T')[0],
-    date_revision: this.nextYear.toISOString().split('T')[0]
+    date_release: this.localDate,
+    date_revision: this.localNextYear
   };
 
   productForm = this.fb.group({
     id: [
       this.initialFormValue.id,
       {
-        validators: [Validators.required],
+        validators: [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(10),
+        ],
         asyncValidators: [validateId(this.productService)],
         updateOn:'change'
       }
@@ -43,7 +55,7 @@ export class ProductCreateComponent implements OnInit{
       this.initialFormValue.name,
       [
         Validators.required,
-        Validators.minLength(5),
+        Validators.minLength(6),
         Validators.maxLength(100)
       ]],
     description: [
@@ -76,7 +88,7 @@ export class ProductCreateComponent implements OnInit{
 
 
   ngOnInit(): void {
-    this.productForm.get('date_release')?.valueChanges.subscribe((date)=>{
+    this.productForm.get('date_release')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((date)=>{
       let current = new Date(date as string);
       let nextYear =  new Date(current.setFullYear(current.getFullYear() + 1));
 
@@ -90,18 +102,16 @@ export class ProductCreateComponent implements OnInit{
     this.productForm.reset({...this.initialFormValue});
   }
 
-
   onSubmit(){
     this.productForm.markAllAsTouched();
 
     if (this.productForm.valid) {
       this.productService.create(this.productForm.getRawValue()).subscribe({
         next: (data:ProductResponse) => {
-          debugger;
           alert(data.message);
         },
         error: (error: HttpErrorResponse) => {
-            alert(error.error.message);
+           alert(error?.error?.message);
         }
       })
     }

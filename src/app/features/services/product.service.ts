@@ -24,6 +24,10 @@ export class ProductService {
     return this.http.put<ProductResponse>(`/api/bp/products/${id}`, body);
   }
 
+  delete(id: string): Observable<Partial<ProductResponse>> {
+    return this.http.delete<ProductResponse>(`/api/bp/products/${id}`);
+  }
+
   verification(id: string): Observable<boolean> {
     return this.http.get<boolean>(`/api/bp/products/verification/${id}`);
   }
